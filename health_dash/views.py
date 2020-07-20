@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from .models import HospBeds
+from django.core.serializers import serialize
 from django.views.generic import TemplateView
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
@@ -11,7 +13,10 @@ from django.conf import settings
 def healthDash(request):
     context = {'site_url':settings.MY_SITE_URL}
     return render(request,"health_dash/health.html",context)
-
+    obj=HospBeds.objects.all()
+    ser_test=serialize('geojson',obj)
+    context = {'image_loc':ser_test}  # send data to front end
+    return render(request,"health_dash/health.html",context)
 
 def UrbanHealth(request):
     return render(request,"health_dash/town_health.html")

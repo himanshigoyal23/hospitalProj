@@ -77,6 +77,16 @@
         background: repeating-linear-gradient(to right, #ccc, #ccc 10%, #000 10%, #000 11%, #ccc 11%, #ccc 20%);
     }
     
+    .vacant {
+    	color:green;
+    }
+    .occupied {
+    	color:red;
+    }
+    .reserved {
+    	color:yellow;
+    }
+
     #checkboxes3 label {
         display: block;
         text-align: left;
@@ -263,6 +273,9 @@
                          
                 </div>
               </div>
+
+              <input type="checkbox" value="{hospbeds}" onchange=" getBoundaryst(this)"></tb><tb><span> Hospitals </span>
+
   </div> 
 </div><!--Ending of India VIew div--->
    <!--Creating div for navigated area view it is ending after highlight rural boundaries of maharashtra--->
@@ -849,6 +862,7 @@
                                             putwards("Mumbai Suburban", 'geonode:corporatorwardboundary_mumbai_13may');
                                         else if (boundary == "{mumadmsubwards}")
                                             putwards("Mumbai Suburban", 'geonode:Mumbai_Ward_Boundary_19may2020');
+                                        
                                         else
                                             putWMS("geonode:maha_demography_with_mumbai");
                                     } else {
@@ -882,6 +896,8 @@
                                             putWMS("geonode:govt_schools_30april");
                                         else if (boundary == "{aidtri}")
                                             putWMS("geonode:aided_schools_30april");
+                                        else if (boundary == "{hospbeds}")
+                                            putWMS('geonode:HospBeds');
                                         else
                                             putWMS("geonode:school_16_17_11april");
                                     } else {
@@ -1812,6 +1828,70 @@
                                     info.update();
                                 }
 
+        //                         var markerClusters = L.markerClusterGroup({"chunkedLoading": true});
+
+        //                         function displayPoints(){
+								// 	mymap.spin(true,{lines: 9, length: 2, width: 20, scale: 60,radius: 70, color: "grey"});
+
+								// 	let rootUrl = '{{site_url}}geoserver/geonode/ows';
+        //                             let bbOffset = output.innerHTML / 111;
+        //                             let options = {
+        //                                 service: 'WFS',
+        //                                 version: '1.0.0',
+        //                                 request: 'GetFeature',
+        //                                 outputFormat: 'application/json',
+        //                                 typeName: 'geonode:HospBeds',
+        //                                 // cql_filter: `BBOX(the_geom,${currentPos[1]-bbOffset},${currentPos[0]-bbOffset},${currentPos[1]+bbOffset},${currentPos[0]+bbOffset}) AND (${query})`,
+        //                                 // propertyName: 'the_geom,facltyname,facltytyp,address_te1,amenities,state_gen,district_g,pincode_ge,totbed,state_gen'
+        //                             };
+        //                             let parameters = L.Util.extend(options);
+        //                             cql_url = rootUrl + L.Util.getParamString(parameters);
+
+
+								// 	//var parameters = L.Util.extend(param);
+								// 	point_url = rootUrl + L.Util.getParamString(parameters)
+								// 	var geojsonMarkerOptions = {
+								// 		radius: 8,
+								// 		fillColor: "#ff7800",
+								// 		color: "#000",
+								// 		weight: 1,
+								// 		opacity: 1,
+								// 		fillOpacity: 0.8
+								// 	};
+
+								// 	fetch(point_url)
+								// 	.then(
+								// 	    function(response) {
+								// 	    if (response.status !== 200) {
+								// 	        console.log('Looks like there was a problem. Status Code: ' +
+								// 	        response.status);
+								// 	        return;
+								// 	    }
+
+								// 	    // Examine the text in the response
+								// 	    response.json().then(function(stressData) {
+								// 	        geojson = L.geoJson(stressData.features,{
+								// 		    pointToLayer: function (feature, latlng) {
+								// 			return L.circleMarker(latlng, geojsonMarkerOptions);
+								// 		},onEachFeature: onEachFeaturePoint
+								// 	});
+
+								// 	    markerClusters.addLayer(geojson);
+								// 	    mymap.addLayer(markerClusters);
+								// 	    LayerList.push(markerClusters);
+								// 	    pointLayerList.push(geojson);
+								// 	    mymap.spin(false);
+								// 	    url = "";
+								// 	    });
+
+
+								// 	    }
+								// 	)
+								// 	.catch(function(err) {
+								// 	    console.log('Fetch Error :-S', err);
+								// });
+
+								// }
 
                                 //this is for putting districts in drop down menu
                                 function putWMSLayer() {
@@ -2531,7 +2611,7 @@
                                     // compose the URL for the request
 
                                     var URL = TRIBLAYER + '&BBOX=' + BBOX + '&FEATURE_COUNT=1&HEIGHT=' + HEIGHT + '&WIDTH=' + WIDTH + '&INFO_FORMAT=application%2Fjson&TILED=false&CRS=EPSG%3A3857&I=' + X + '&J=' + Y;
-                                    //console.log(e);
+                                    console.log(e);
                                     $.ajax({
                                         url: URL,
                                         dataType: "json",
@@ -2570,6 +2650,27 @@
                                                         "<tr><td><b>Block</b></td><td>" + feature.properties.block_name + "</td></tr>" +
                                                         "<tr><td><b>Village</b></td><td>" + feature.properties.village_na + "</td></tr>" +
                                                         "<tr><td><b>School Name</b></td><td>" + feature.properties.school_nam + "</td></tr>";
+
+                                                }else if (feature.properties.totalBeds) {
+                                                    insti_content = `<table class = 'popupclass' ><tr><td><b>Date & Time of Last Updation</b></td><td>` + feature.properties.undefined+ `</td></tr><tr><td><b>Hospital Name</b></td><td>` + feature.properties.factly_nam+ `</td></tr>` +
+                                                    	 `<tr><td><b>Total Beds</b></td><td>` + feature.properties.totalBeds + `</td></tr>
+                                                        <tr><td><b>Non-COVID Ventilator Beds</b></td><td>` + feature.properties.ncv + `</td></tr>` +
+                                                        `<tr><td><b>Non-COVID Oxygen Beds</b></td><td>` + feature.properties.nco + `</td></tr>` +
+                                                        `<tr><td><b>Non-COVID Isolation Beds</b></td><td>` + feature.properties.nci + `</td></tr>` +
+                                                       
+                                                        `<table style = 'width:100%;'><tr><td>COVID Ventilator Beds</td></tr>
+                                                        	<tr class="vacant"><td>COVID Ventialtor Vacant Beds</td><td>`+feature.properties.cvv +`</td></tr>
+                                                        	<tr class="reserved"><td>COVID Ventialtor Reserved Beds</td><td>`+feature.properties.cvr +`</td></tr>
+                                                        	<tr class="occupied"><td>COVID Ventialtor Occupied Beds</td><td>`+feature.properties.cvo +`</td></tr></table>
+                                                        <table style = 'width:100%;' class = 'popupclass'><tr><td>COVID Isolation Beds</tr>
+                                                      <tr class="vacant"><td>COVID Isolation Vacant Beds</td><td>`+feature.properties.civ +`</td></tr>
+                                                        	<tr class="reserved"><td>COVID Isolation Reserved Beds</td><td>`+feature.properties.cir +`</td></tr>
+                                                        	<tr class="occupied"><td>COVID Isolation Occupied Beds</td><td>`+feature.properties.cio +`</td></tr></table>
+
+                                                        	<table style = 'width:100%;' class = 'popupclass'><tr><td>COVID Isolation Beds</td></tr>
+                                                        	<tr class="vacant"><td>COVID Oxygen Vacant Beds</td><td>`+feature.properties.cov +`</td></tr>
+                                                        	<tr class="reserved"><td>COVID Oxygen Reserved Beds</td><td>`+feature.properties.cor +`</td></tr>
+                                                        	<tr class="occupied"><td>COVID Oxygen Occupied Beds</td><td>`+feature.properties.coo +`</td></tr></table></table>`;
 
                                                 } else {
                                                     insti_content = "<table class = 'popupclass' ><tr><td><b>Facility Name</b></td><td>" + feature.properties.facltyname + "</td></tr>" +
