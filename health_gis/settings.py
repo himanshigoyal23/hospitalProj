@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'health_gis',
+    'health_dash.apps.HealthDashConfig',
     'django.contrib.gis',
+
 ]
 
 MIDDLEWARE = [

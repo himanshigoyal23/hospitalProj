@@ -17,6 +17,11 @@
         background-color: #c9dbe6;
     }
     
+    .circle{
+    	background-color: red;
+    	border-radius: 50%;
+    }
+
     #checkboxes {
         display: none;
         /* border: 1px #dadada solid; */
@@ -897,7 +902,7 @@
                                         else if (boundary == "{aidtri}")
                                             putWMS("geonode:aided_schools_30april");
                                         else if (boundary == "{hospbeds}")
-                                            putWMS('geonode:HospBeds');
+                                            displayPoint();
                                         else
                                             putWMS("geonode:school_16_17_11april");
                                     } else {
@@ -2022,6 +2027,76 @@
 
                                 }
 
+
+								function onEachFeaturePoint(feature, layer) {
+								    layer.bindPopup(`<table class = 'popupclass' ><tr><td><b>Date & Time of Last Updation</b></td><td>` + feature.properties.undefined+ `</td></tr><tr><td><b>Hospital Name</b></td><td>` + feature.properties.factly_nam+ `</td></tr>` +
+                                                    	 `<tr><td><b>Total Beds</b></td><td>` + feature.properties.totalbeds + `</td></tr>
+                                                        <tr><td><b>Non-COVID Ventilator Beds</b></td><td>` + feature.properties.ncv + `</td></tr>` +
+                                                        `<tr><td><b>Non-COVID Oxygen Beds</b></td><td>` + feature.properties.nco + `</td></tr>` +
+                                                        `<tr><td><b>Non-COVID Isolation Beds</b></td><td>` + feature.properties.nci + `</td></tr>` +
+                                                       
+                                                        `<table style = 'width:100%;'><tr><td>COVID Ventilator Beds</td></tr>
+                                                        	<tr class="vacant"><td>Vacant</td><td>`+feature.properties.cvv +`</td></tr>
+                                                        	<tr class="reserved"><td>Reserved</td><td>`+feature.properties.cvr +`</td></tr>
+                                                        	<tr class="occupied"><td>Occupied</td><td>`+feature.properties.cvo +`</td></tr></table>
+                                                        <table style = 'width:100%;' class = 'popupclass'><tr><td>COVID Isolation Beds</tr>
+                                                      <tr class="vacant"><td>Vacant</td><td>`+feature.properties.civ +`</td></tr>
+                                                        	<tr class="reserved"><td>Reserved</td><td>`+feature.properties.cir +`</td></tr>
+                                                        	<tr class="occupied"><td>Occupied</td><td>`+feature.properties.cio +`</td></tr></table>
+
+                                                        	<table style = 'width:100%;' class = 'popupclass'><tr><td>COVID Isolation Beds</td></tr>
+                                                        	<tr class="vacant"><td>Vacant</td><td>`+feature.properties.cov +`</td></tr>
+                                                        	<tr class="reserved"><td>Reserved</td><td>`+feature.properties.cor +`</td></tr>
+                                                        	<tr class="occupied"><td>Occupied</td><td>`+feature.properties.coo +`</td></tr></table></table>`);
+								}
+
+
+								function hospgeojsonMarkerOptions(feature, fac) {
+                                        var rad,col;
+                                        var num = `${feature.properties.totalbeds}`;
+                                        //console.log(num);
+                                        if (num > 0 && num < 300) {
+                                            rad = 7; col="#cce31b";
+                                        } else if (num > 300 && num < 600) {
+                                            rad = 9; col="#3972a3";
+                                        } else {
+                                            rad = 11; col="#540839";
+                                        }
+
+                                        let circleProp = {
+                                            radius: rad,
+                                            fillColor: col,
+                                            color: "#000",
+                                            weight: 1,
+                                            opacity: 1,
+                                            fillOpacity: 0.8
+                                        };
+                                       
+
+                                        return circleProp
+                                    };
+
+								//var Hospbeds =[];
+                                function displayPoint() {
+                                	
+								   
+								    let Hospbeds = {{ hospbeds|safe }};
+									let hosbed = Hospbeds.features
+								    //let Hospbeds = JSON.parse('{{ Hospbeds|safe }}');
+								    console.log(hosbed);
+								    //mymap.setView([18.59376, 73.79308], 16);
+								    geojson = L.geoJson(Hospbeds.features, {
+								    pointToLayer: function (feature, latlng) {
+								        return L.circleMarker(latlng, hospgeojsonMarkerOptions(feature, hosbed));
+								    },
+								    onEachFeature: onEachFeaturePoint,
+								    });
+								    LayerList.push(geojson);
+								    mymap.addLayer(geojson);
+								    legend.addTo(mymap);
+								    
+  								}
+
                                 function addWMSLegend(layer) {
                                     lagendGraphic = "https://makerghat.urbansciences.in/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&WIDTH=20&HEIGHT=20&LAYER=" + layer + "&LEGEND_OPTIONS=forceLabels:on";
                                     wms_legend = L.wmsLegend(lagendGraphic);
@@ -2379,7 +2454,7 @@
                                     let parameters = L.Util.extend(options);
                                     cql_url = rootUrl + L.Util.getParamString(parameters)
                                     console.log(cql_url);
-
+                                    //markers for covid facilities
                                     function geojsonMarkerOptions(feature, fac) {
                                         var rad;
                                         var num = `${feature.properties.iso_minus_}`;
@@ -2719,6 +2794,34 @@
                                         }
                                     });
                                 }
+
+                               
+                                //custom control
+                                var legend = L.control({position: 'bottomright'});
+
+								legend.onAdd = function (mymap) {
+									console.log("legend");
+								    var div = L.DomUtil.create('div', 'info legend'),
+								    	labels = ['<strong>Total Number of Beds</strong>'],
+							 			categories = [0,300,600,900];
+							 			colors=['#cce31b','#3972a3','#540839']
+								       
+								    // loop through our density intervals and generate a label with a colored square for each interval
+								   
+								    for (var i = 0; i < categories.length-1; i++) {
+								        div.innerHTML +=
+								            labels.push(
+							                '<i class="circle" style="background:'+ colors[i] +';opacity:0.7;">&nbsp;&nbsp;&nbsp;&nbsp;</i> ' +
+							            	categories[i]+'-'+categories[i+1]+'<br>')
+
+
+								    }
+								    div.innerHTML = labels.join('<br>');
+
+								    return div;
+								};
+								// legend.addTo(mymap);
+
                             </script>
 
                             {% endblock %}

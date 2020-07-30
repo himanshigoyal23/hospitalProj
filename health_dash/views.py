@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from .models import HospBeds
 from django.core.serializers import serialize
 from django.views.generic import TemplateView
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -7,16 +6,28 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
 from django.conf import settings
+import json, ast
 
+from .models import Hospbeds
 # Create your views here.
 
-def healthDash(request):
-    context = {'site_url':settings.MY_SITE_URL}
-    return render(request,"health_dash/health.html",context)
-    obj=HospBeds.objects.all()
-    ser_test=serialize('geojson',obj)
-    context = {'image_loc':ser_test}  # send data to front end
-    return render(request,"health_dash/health.html",context)
+def HealthDash(request):
+    # context = {'site_url':settings.MY_SITE_URL}
+    # return render(request,"health_dash/health.html",context)
+    obj=Hospbeds.objects.all()
+    # # raw = Hospbeds.objects.raw('SELECT * FROM "HospBeds"')
+    # ser_test=serialize('geojson',objk)
+    # context = {'Hospbeds':ser_test}  # send data to front end
+    # return render(request,"health_dash/health.html",context)
+    ser_test = serialize('geojson',obj,)
+    #context = {'image_loc':ser_test},fields=('geom',)
+    
+
+    hospbeds = json.loads(ser_test)
+    hospbeds = json.dumps(hospbeds)
+    return render(request,"health_dash/health.html",{
+                          'hospbeds': hospbeds
+                         })
 
 def UrbanHealth(request):
     return render(request,"health_dash/town_health.html")

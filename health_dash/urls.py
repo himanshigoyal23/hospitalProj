@@ -3,7 +3,7 @@ from . import views
 from django.conf.urls import url
 
 urlpatterns = [
-    path('', views.healthDash, name='rural_health'),
+    path('', views.HealthDash, name='rural_health'),
     url(r'^login/', views.login_request, name='login'),
     url(r'^logout/', views.logout_request, name='logout'),
     url(r'^contribute/', views.contribute, name='contribute'),
